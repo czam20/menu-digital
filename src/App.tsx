@@ -5,7 +5,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<>home</>} />
+        <Route path="/" element={<><span className="bg-black text-white">home 2</span></>} />
         <Route path="/owner/register" element={<>registro propietario</>} />
         <Route
           path="/owner/waiter/register"
