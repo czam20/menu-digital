@@ -1,6 +1,7 @@
 import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
 import "./App.css";
 import OwnerRegister from "./pages/OwnerRegister";
+import Login from "./pages/Login";
 
 function App() {
   return (
@@ -30,7 +31,7 @@ function App() {
           path="/owner/menu"
           element={<>creacion y edicion de menu del propietario</>}
         />
-        <Route path="/login" element={<>login</>} />
+        <Route path="/login" element={<Login />} />
         <Route path="/waiter" element={<>home mesero</>} />
         <Route path="/menu/:menuid/:plateid" element={<>detalle menu</>} />
       </Routes>
