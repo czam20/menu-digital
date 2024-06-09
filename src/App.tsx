@@ -1,12 +1,27 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
 import "./App.css";
+import OwnerRegister from "./pages/OwnerRegister";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<><span className="bg-black text-white">home 2</span></>} />
-        <Route path="/owner/register" element={<>registro propietario</>} />
+        <Route
+          path="/"
+          element={
+            <>
+              <div className="flex gap-3">
+                <Link to="/owner/register" className="underline text-blue-300">
+                  Registro Propietario
+                </Link>
+                <Link to="/login" className="underline text-blue-300">
+                  Login
+                </Link>
+              </div>
+            </>
+          }
+        />
+        <Route path="/owner/register" element={<OwnerRegister />} />
         <Route
           path="/owner/waiter/register"
           element={<>registro de meseros por propietario</>}
