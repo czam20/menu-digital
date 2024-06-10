@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useForm } from "@mantine/form";
 import { Link } from "react-router-dom";
+import login from "./api/login";
+import { useToast } from "@/components/ui/use-toast";
 
 type LoginForm = {
   email: string;
@@ -9,6 +11,8 @@ type LoginForm = {
 };
 
 function Login() {
+  const { toast } = useToast();
+
   const form = useForm<LoginForm>({
     initialValues: {
       email: "",
@@ -21,9 +25,19 @@ function Login() {
       <div className="flex flex-col gap-4">
         <h1 className="text-center text-4xl">Ingresar a la App</h1>
         <form
-          onSubmit={form.onSubmit((values) => {
+          onSubmit={form.onSubmit(async (values) => {
             //TODO send values
             console.log(values);
+
+            const resp = await login(values);
+
+            if (resp.ok) {
+            } else {
+              toast({
+                variant: "destructive",
+                description: "Hubo un problema al ingresar.",
+              });
+            }
           })}
           className="flex flex-col gap-4 w-96 border p-5 rounded-md"
         >

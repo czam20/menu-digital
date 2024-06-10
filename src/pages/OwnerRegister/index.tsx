@@ -2,13 +2,18 @@ import SelectGeneral from "@/components/custom/select-general";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { uploadImage } from "@/lib/utils";
+
 import { useForm } from "@mantine/form";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import register from "./api/register";
+import { useToast } from "@/components/ui/use-toast";
+import { IconArrowLeft } from "@tabler/icons-react";
 
 type RifPrefix = "V" | "J";
 
-type OwnerInfoForm = {
+export type OwnerInfoForm = {
   ownerName: string;
   ownerEmail: string;
   ownerDNI: string;
@@ -16,11 +21,12 @@ type OwnerInfoForm = {
   confirmPassword: string;
 };
 
-type RestaurantInfoForm = {
+export type RestaurantInfoForm = {
   restaurantName: string;
   restaurantLocation: string;
   restaurantRifPrefix: RifPrefix;
   restaurantRifNumber: string;
+  logo: File | undefined;
 };
 
 const STEPS = {
@@ -29,7 +35,10 @@ const STEPS = {
 } as const;
 
 function OwnerRegister() {
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<number>(STEPS.RESTAURANT_INFO);
+  const navigate = useNavigate();
 
   const form = useForm<RestaurantInfoForm & OwnerInfoForm>({
     initialValues: {
@@ -37,13 +46,19 @@ function OwnerRegister() {
       restaurantLocation: "",
       restaurantRifPrefix: "V",
       restaurantRifNumber: "",
-
+      logo: undefined,
       ownerName: "",
       ownerEmail: "",
       ownerDNI: "",
       password: "",
       confirmPassword: "",
     },
+    validate: {
+      confirmPassword: (value, values) => {
+        if(!values.ownerName) return null
+        return value !== values.password ? "Las contraseñas no coinciden" : null
+      }
+    }
   });
 
   const renderStep = () => {
@@ -59,6 +74,19 @@ function OwnerRegister() {
                 form.setFieldValue("restaurantName", e.target.value)
               }
             />
+
+            <Input
+              label="Logo"
+              required
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                if (e.target.files) {
+                  form.setFieldValue("logo", e.target.files[0]);
+                }
+              }}
+            />
+
             <Input
               label="Ubicación"
               required
@@ -141,8 +169,11 @@ function OwnerRegister() {
               onChange={(e) =>
                 form.setFieldValue("confirmPassword", e.target.value)
               }
+              error={form.errors.confirmPassword as string}
             />
-            <Button type="submit">Registrar</Button>
+            <Button type="submit" loading={loading}>
+              Registrar
+            </Button>
           </>
         );
 
@@ -160,20 +191,88 @@ function OwnerRegister() {
             Datos del{" "}
             {step === STEPS.OWNER_INFO ? "Propietario" : "Restaurante"}
           </h2>
+          {step === STEPS.OWNER_INFO ? (
+            <IconArrowLeft
+              onClick={() => {
+                setStep(STEPS.RESTAURANT_INFO);
+              }}
+              role="button"
+              stroke={2}
+            />
+          ) : null}
           <form
-            onSubmit={form.onSubmit((values) => {
+            onSubmit={form.onSubmit(async (values) => {
               if (step === STEPS.RESTAURANT_INFO) {
                 setStep(STEPS.OWNER_INFO);
               } else {
-                //TODO send values
-                console.log(values);
+                if (values.logo) {
+                  setLoading(true);
+                  const logoURL = await uploadImage(
+                    values.logo,
+                    "restaurant_logos"
+                  );
+
+                  if (logoURL) {
+                    const payload = {
+                      restaurant: {
+                        name: values.restaurantName,
+                        address: values.restaurantLocation,
+                        rif: `${values.restaurantRifPrefix}-${values.restaurantRifNumber}`,
+                        logo: logoURL,
+                      },
+                      user: {
+                        fullname: values.ownerName,
+                        email: values.ownerEmail,
+                        dni: values.ownerDNI,
+                        password: values.password,
+                      },
+                    };
+                    const resp = await register(payload);
+
+                    if (resp.ok) {
+                      toast({
+                        description: "Se ha creado el usuario exitosamente.",
+                      });
+
+                      setTimeout(() => {
+                        toast({
+                          description: "Redirigiendo al Login.",
+                        });
+                      }, 800);
+
+                      setTimeout(() => {
+                        navigate("/login", {
+                          replace: true,
+                        });
+                      }, 500);
+                    } else {
+                      toast({
+                        variant: "destructive",
+                        description:
+                          "Hubo un problema al registrar al usuario.",
+                      });
+                    }
+                  } else {
+                    toast({
+                      variant: "destructive",
+                      description: "Hubo un problema al subir el logo.",
+                    });
+                  }
+
+                  setLoading(false);
+                }
               }
             })}
             className="flex flex-col gap-4 w-96 border p-5 rounded-md"
           >
             {renderStep()}
           </form>
-          <div>¿Ya tienes una cuenta? <Link to='/login' className="underline text-blue-300">Ingresar</Link></div>
+          <div>
+            ¿Ya tienes una cuenta?{" "}
+            <Link to="/login" className="underline text-blue-300">
+              Ingresar
+            </Link>
+          </div>
         </div>
       </div>
     </>
