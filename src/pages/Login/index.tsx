@@ -4,6 +4,7 @@ import { useForm } from "@mantine/form";
 import { Link } from "react-router-dom";
 import login from "./api/login";
 import { useToast } from "@/components/ui/use-toast";
+import { useState } from "react";
 
 type LoginForm = {
   email: string;
@@ -11,6 +12,7 @@ type LoginForm = {
 };
 
 function Login() {
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<LoginForm>({
@@ -26,18 +28,24 @@ function Login() {
         <h1 className="text-center text-4xl">Ingresar a la App</h1>
         <form
           onSubmit={form.onSubmit(async (values) => {
-            //TODO send values
-            console.log(values);
+            setLoading(true);
 
             const resp = await login(values);
 
             if (resp.ok) {
+              window.localStorage.setItem(
+                "auth",
+                JSON.stringify(resp.data?.user)
+              );
+              window.location.reload();
             } else {
               toast({
                 variant: "destructive",
                 description: "Hubo un problema al ingresar.",
               });
             }
+
+            setLoading(false);
           })}
           className="flex flex-col gap-4 w-96 border p-5 rounded-md"
         >
@@ -55,7 +63,9 @@ function Login() {
             value={form.values.password}
             onChange={(e) => form.setFieldValue("password", e.target.value)}
           />
-          <Button type="submit">Ingresar</Button>
+          <Button type="submit" loading={loading}>
+            Ingresar
+          </Button>
         </form>
         <div>
           ¿Aún no tienes una cuenta?{" "}
