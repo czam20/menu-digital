@@ -36,6 +36,7 @@ const STEPS = {
 
 function OwnerRegister() {
   const { toast } = useToast();
+  const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<number>(STEPS.RESTAURANT_INFO);
   const navigate = useNavigate();
@@ -55,10 +56,12 @@ function OwnerRegister() {
     },
     validate: {
       confirmPassword: (value, values) => {
-        if(!values.ownerName) return null
-        return value !== values.password ? "Las contraseñas no coinciden" : null
-      }
-    }
+        if (!values.ownerName) return null;
+        return value !== values.password
+          ? "Las contraseñas no coinciden"
+          : null;
+      },
+    },
   });
 
   const renderStep = () => {
@@ -172,7 +175,11 @@ function OwnerRegister() {
               error={form.errors.confirmPassword as string}
             />
             <Button type="submit" loading={loading}>
-              Registrar
+              {uploading
+                ? "Uploading Image..."
+                : loading
+                ? "Registrando..."
+                : "Registrar"}
             </Button>
           </>
         );
@@ -206,6 +213,7 @@ function OwnerRegister() {
                 setStep(STEPS.OWNER_INFO);
               } else {
                 if (values.logo) {
+                  setUploading(true);
                   setLoading(true);
                   const logoURL = await uploadImage(
                     values.logo,
@@ -213,6 +221,8 @@ function OwnerRegister() {
                   );
 
                   if (logoURL) {
+                    setUploading(false);
+
                     const payload = {
                       restaurant: {
                         name: values.restaurantName,
