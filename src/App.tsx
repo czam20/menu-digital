@@ -10,6 +10,8 @@ import { useEffect } from "react";
 import ProtectedRoutes from "./components/protected-routes";
 import UnauthenticatedRoutes from "./components/unauthenticated-routes";
 import { Button } from "./components/ui/button";
+import Home from "./pages/Home";
+import WaiterRegister from "./pages/Home/pages/WaiterRegister";
 
 function App() {
   const snapAuth = useSnapshot(authStore);
@@ -75,7 +77,7 @@ function App() {
             path="home/owner/waiter/register"
             element={
               <ProtectedRoutes>
-                registro de meseros por propietario
+                <WaiterRegister />
               </ProtectedRoutes>
             }
           />
@@ -99,18 +101,7 @@ function App() {
             path="/home"
             element={
               <ProtectedRoutes>
-                <div className="flex flex-col gap-5">
-
-                  home mesero y owner
-                  <Button
-                    onClick={() => {
-                      window.localStorage.removeItem("auth");
-                      window.location.reload();
-                    }}
-                  >
-                    Logout
-                  </Button>
-                </div>
+                <Home />
               </ProtectedRoutes>
             }
           />
