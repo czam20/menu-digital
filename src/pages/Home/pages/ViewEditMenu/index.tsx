@@ -1,6 +1,5 @@
 import {
   IconArrowLeft,
-  IconCirclePlus,
   IconEdit,
   IconEye,
   IconEyeOff,

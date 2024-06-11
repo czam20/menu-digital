@@ -1,4 +1,4 @@
-import { BrowserRouter, Link, Outlet, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 import "./App.css";
 import OwnerRegister from "./pages/OwnerRegister";
 import Login from "./pages/Login";
@@ -9,7 +9,6 @@ import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
 import ProtectedRoutes from "./components/protected-routes";
 import UnauthenticatedRoutes from "./components/unauthenticated-routes";
-import { Button } from "./components/ui/button";
 import Home from "./pages/Home";
 import WaiterRegister from "./pages/Home/pages/WaiterRegister";
 import ViewEditMenu from "./pages/Home/pages/ViewEditMenu";
