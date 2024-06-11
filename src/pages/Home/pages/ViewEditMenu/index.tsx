@@ -1,4 +1,12 @@
-import { IconArrowLeft, IconCirclePlus, IconPlus } from "@tabler/icons-react";
+import {
+  IconArrowLeft,
+  IconCirclePlus,
+  IconEdit,
+  IconEye,
+  IconEyeOff,
+  IconPlus,
+  IconTrash,
+} from "@tabler/icons-react";
 import { useNavigate } from "react-router";
 import {
   IconCup,
@@ -127,19 +135,52 @@ function ViewEditMenu() {
                   <div className="flex flex-col gap-2">
                     {filteredPlates.map((plate) => {
                       return (
-                        <div className="flex  gap-2 border rounded-md p-1 hover:shadow-md" key={plate._id}>
+                        <div
+                          className="flex  gap-2 border rounded-md p-1 hover:shadow-md"
+                          key={plate._id}
+                        >
                           <img
                             src={plate.photo}
                             alt="plate"
                             className="object-contain w-36 h-36 rounded-md border bg-black"
                           />
 
-                          <div className="flex flex-col justify-between">
+                          <div className="flex flex-col justify-between w-full">
                             <span className="font-bold text-md capitalize text-left">
                               {plate.name}
                             </span>
-                            <span className="text-left">{plate.description}</span>
-                            <span className="text-left">Precio: {plate.price}</span>
+                            <span className="text-left">
+                              {plate.description}
+                            </span>
+                            <div className="flex justify-between w-full items-center">
+                              <span className="text-left">
+                                Precio: {plate.price}
+                              </span>
+                              <div className="flex gap-2 flex-nowrap">
+                                {plate.active ? (
+                                  <IconEye stroke={2} size={17} />
+                                ) : (
+                                  <IconEyeOff stroke={2} size={17} />
+                                )}
+
+                                <IconEdit
+                                  role="button"
+                                  stroke={2}
+                                  size={17}
+                                  onClick={() => {
+                                    navigate(
+                                      `/home/owner/menu/plate/${plate._id}`
+                                    );
+                                  }}
+                                />
+                                <IconTrash
+                                  role="button"
+                                  stroke={2}
+                                  size={17}
+                                  color="red"
+                                />
+                              </div>
+                            </div>
                           </div>
                         </div>
                       );

@@ -6,12 +6,13 @@ import { CATEGORIES } from "../ViewEditMenu";
 import { cn, uploadImage } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import addUpdatePlate from "./api/add-update-plate";
 import { useToast } from "@/components/ui/use-toast";
 import { useSnapshot } from "valtio";
 import authStore from "@/store/auth";
+import getPlate from "./api/get-plate";
 
 type PlateForm = {
   name: string;
@@ -20,6 +21,7 @@ type PlateForm = {
   ingredients: Array<string>;
   categories: Array<"entrada" | "postre" | "principal" | "bebida">;
   isRecommendation: boolean;
+  active: boolean;
   photo: File | undefined;
 };
 
@@ -41,9 +43,45 @@ function AddViewPlate() {
       ingredients: [],
       categories: [],
       isRecommendation: false,
+      active: true,
       photo: undefined,
     },
   });
+
+  useEffect(() => {
+    const getInfo = async () => {
+      const resp = await getPlate({
+        restaurantId: snapAuth.user?.restaurant._id as string,
+        plateId: id as string,
+      });
+
+      if (resp.ok && resp.data) {
+        console.log(resp.data.plate);
+
+        form.setFieldValue("name", resp.data.plate.name);
+        form.setFieldValue("description", resp.data.plate.description);
+        form.setFieldValue("price", resp.data.plate.price.toString());
+        form.setFieldValue("ingredients", resp.data.plate.ingredients);
+        form.setFieldValue("categories", resp.data.plate.categories);
+        form.setFieldValue(
+          "isRecommendation",
+          resp.data.plate.isRecommendation
+        );
+        form.setFieldValue("active", resp.data.plate.active);
+
+        setPreviewUrl(resp.data.plate.photo);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Algo salio mal al obtener el plato",
+        });
+      }
+    };
+
+    if (id) {
+      getInfo();
+    }
+  }, []);
 
   return (
     <div className="w-full min-h-screen flex justify-center items-center">
@@ -63,14 +101,22 @@ function AddViewPlate() {
           onSubmit={form.onSubmit(async (values) => {
             console.log(values);
 
-            if (values.photo) {
-              setUploading(true);
+            if (previewUrl) {
+              let logoURL = "";
+
               setLoading(true);
-              const logoURL = await uploadImage(values.photo, "plate");
-              setUploading(false);
+              if (values.photo) {
+                setUploading(true);
+                logoURL = await uploadImage(values.photo, "plate");
+                setUploading(false);
+              } else {
+                logoURL = previewUrl;
+              }
+
               if (logoURL) {
                 const payload = {
                   restaurantId: snapAuth.user?.restaurant._id as string,
+                  plateId: id,
                   plate: {
                     photo: logoURL,
                     name: values.name,
@@ -79,6 +125,7 @@ function AddViewPlate() {
                     ingredients: values.ingredients,
                     categories: values.categories,
                     isRecommendation: values.isRecommendation,
+                    active: values.active
                   },
                 };
 
@@ -87,8 +134,8 @@ function AddViewPlate() {
                 if (resp.ok) {
                   toast({
                     title: id
-                      ? "Se ha actualizado el plato exitosamente"
-                      : "Se ha creado el plato exitosamente!.",
+                      ? "Se ha actualizado el plato exitosamente!"
+                      : "Se ha creado el plato exitosamente!",
                   });
 
                   navigate("/home/owner/menu");
@@ -109,13 +156,11 @@ function AddViewPlate() {
           })}
           className="flex flex-col gap-4 w-96 border p-5 rounded-md"
         >
-          <div>
-            {form.values.photo ? <img src={previewUrl} alt="plate" /> : null}
-          </div>
+          <div>{previewUrl ? <img src={previewUrl} alt="plate" /> : null}</div>
 
           <Input
             label="Foto"
-            required
+            required={id ? false : true}
             type="file"
             accept="image/*"
             onChange={(e) => {
@@ -231,7 +276,19 @@ function AddViewPlate() {
               }
             />
             <Label className="font-bold font-sans text-dark-blue text-left">
-              Es una Recomendacion
+              Recomendacion del Chef
+            </Label>
+          </div>
+
+          <div className="flex gap-2 my-3">
+            <Checkbox
+              checked={form.values.active}
+              onCheckedChange={(value) =>
+                form.setFieldValue("active", Boolean(value))
+              }
+            />
+            <Label className="font-bold font-sans text-dark-blue text-left">
+              Plato Activo
             </Label>
           </div>
           <Button
@@ -242,7 +299,11 @@ function AddViewPlate() {
             {uploading
               ? "Uploading Image..."
               : loading
-              ? "Agregando Plato..."
+              ? id
+                ? "Actualizando Plato..."
+                : "Agregando Plato..."
+              : id
+              ? "Actualizar Plato"
               : "Agregar Plato"}
           </Button>
         </form>
