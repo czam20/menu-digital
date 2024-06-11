@@ -22,6 +22,17 @@ import getAllPlates, { Plate } from "./api/get-all-plates";
 import { useSnapshot } from "valtio";
 import authStore from "@/store/auth";
 import { useToast } from "@/components/ui/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import deletePlate from "./api/delete-plate";
 
 export const CATEGORIES = [
   {
@@ -173,12 +184,7 @@ function ViewEditMenu() {
                                     );
                                   }}
                                 />
-                                <IconTrash
-                                  role="button"
-                                  stroke={2}
-                                  size={17}
-                                  color="red"
-                                />
+                                <DeletePlateModal plateId={plate._id} />
                               </div>
                             </div>
                           </div>
@@ -195,6 +201,52 @@ function ViewEditMenu() {
         </div>
       </div>
     </>
+  );
+}
+
+function DeletePlateModal(props: { plateId: string }) {
+  const { toast } = useToast();
+  const snapAuth = useSnapshot(authStore);
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <IconTrash role="button" stroke={2} size={17} color="red" />
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            Estas seguro de querer borrar este plato?
+          </AlertDialogTitle>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={async () => {
+              const resp = await deletePlate({
+                restaurantId: snapAuth.user?.restaurant._id as string,
+                plateId: props.plateId,
+              });
+
+              if (resp.ok) {
+                toast({
+                  title: "Se ha borrado el plato exitosamente!",
+                });
+
+                window.location.reload();
+              } else {
+                toast({
+                  variant: "destructive",
+                  title: "Algo salio mal al borrar el plato.",
+                });
+              }
+            }}
+          >
+            Borrar Plato
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 
