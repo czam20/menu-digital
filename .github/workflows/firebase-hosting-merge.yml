@@ -6,6 +6,13 @@ on:
   push:
     branches:
       - master
+env:
+  VITE_BACKEND_BASE_URL: ${{secrets.VITE_BACKEND_BASE_URL}}
+  VITE_CLOUDINARY_URL: ${{secrets.VITE_CLOUDINARY_URL}}
+  VITE_CLOUDINARY_CLOUD_NAME: ${{secrets.VITE_CLOUDINARY_CLOUD_NAME}}
+  VITE_CLOUDINARY_API_KEY: ${{secrets.VITE_CLOUDINARY_API_KEY}}
+  VITE_CLOUDINARY_API_SECRET: ${{secrets.VITE_CLOUDINARY_API_SECRET}}
+  VITE_CLOUDINARY_UPLOAD_PRESET: ${{secrets.VITE_CLOUDINARY_UPLOAD_PRESET}}
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
