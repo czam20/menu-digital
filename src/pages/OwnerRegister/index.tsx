@@ -222,8 +222,8 @@ function OwnerRegister() {
                     "restaurant_logos"
                   );
 
+                  setUploading(false);
                   if (logoURL) {
-                    setUploading(false);
 
                     const payload = {
                       restaurant: {

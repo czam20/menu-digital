@@ -4,7 +4,15 @@ export type User = {
   dni: string;
   email: string;
   fullname: string;
-  restaurant: string;
+  restaurant: {
+    address: string;
+    logo: string;
+    name: string;
+    // orders: [];
+    // plates: [];
+    rif: string;
+    _id: string;
+  };
   rol: "owner" | "waiter";
 };
 

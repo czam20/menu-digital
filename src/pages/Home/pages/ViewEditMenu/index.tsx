@@ -6,10 +6,14 @@ import {
   IconSalad,
   IconToolsKitchen,
 } from "@tabler/icons-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import getAllPlates, { Plate } from "./api/get-all-plates";
+import { useSnapshot } from "valtio";
+import authStore from "@/store/auth";
+import { useToast } from "@/components/ui/use-toast";
 
 export const CATEGORIES = [
   {
@@ -32,8 +36,35 @@ export const CATEGORIES = [
 
 function ViewEditMenu() {
   const navigate = useNavigate();
-  const [selectedCategory, setSelectedCategory] = useState<string>(
-    CATEGORIES[0].label
+  const snapAuth = useSnapshot(authStore);
+  const { toast } = useToast();
+  const [plates, setPlates] = useState<Plate[]>([]);
+
+  const [selectedCategory, setSelectedCategory] = useState<
+    "entrada" | "postre" | "principal" | "bebida"
+  >(CATEGORIES[0].label);
+
+  useEffect(() => {
+    const getMenu = async () => {
+      const resp = await getAllPlates({
+        restaurantId: snapAuth.user?.restaurant._id as string,
+      });
+
+      if (resp.ok && resp.data) {
+        setPlates(resp.data.plates);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Algo salio mal al obtener los platos",
+        });
+      }
+    };
+
+    getMenu();
+  }, []);
+
+  const filteredPlates = plates.filter((plate) =>
+    plate.categories.includes(selectedCategory)
   );
 
   return (
@@ -91,7 +122,33 @@ function ViewEditMenu() {
                 })}
               </div>
 
-              <div>No hay platos</div>
+              <div>
+                {filteredPlates.length > 0 ? (
+                  <div className="flex flex-col gap-2">
+                    {filteredPlates.map((plate) => {
+                      return (
+                        <div className="flex  gap-2 border rounded-md p-1 hover:shadow-md" key={plate._id}>
+                          <img
+                            src={plate.photo}
+                            alt="plate"
+                            className="object-contain w-36 h-36 rounded-md border bg-black"
+                          />
+
+                          <div className="flex flex-col justify-between">
+                            <span className="font-bold text-md capitalize text-left">
+                              {plate.name}
+                            </span>
+                            <span className="text-left">{plate.description}</span>
+                            <span className="text-left">Precio: {plate.price}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div>No hay platos</div>
+                )}
+              </div>
             </div>
           </div>
         </div>

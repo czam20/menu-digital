@@ -63,7 +63,7 @@ function WaiterRegister() {
                 dni: values.dni,
                 password: values.password,
               },
-              restaurantId: snapAuth.user?.restaurant as string,
+              restaurantId: snapAuth.user?.restaurant._id as string,
             };
 
             const resp = await waiterRegister(payload);

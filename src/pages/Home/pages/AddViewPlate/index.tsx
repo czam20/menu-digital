@@ -3,11 +3,15 @@ import { useForm } from "@mantine/form";
 import { IconArrowLeft, IconPlus } from "@tabler/icons-react";
 import { useNavigate, useParams } from "react-router";
 import { CATEGORIES } from "../ViewEditMenu";
-import { cn } from "@/lib/utils";
+import { cn, uploadImage } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import addUpdatePlate from "./api/add-update-plate";
+import { useToast } from "@/components/ui/use-toast";
+import { useSnapshot } from "valtio";
+import authStore from "@/store/auth";
 
 type PlateForm = {
   name: string;
@@ -23,6 +27,11 @@ function AddViewPlate() {
   let { id } = useParams();
   const navigate = useNavigate();
   const [ingredient, setIngredient] = useState("");
+  const [previewUrl, setPreviewUrl] = useState("");
+  const { toast } = useToast();
+  const snapAuth = useSnapshot(authStore);
+  const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const form = useForm<PlateForm>({
     initialValues: {
@@ -51,11 +60,59 @@ function AddViewPlate() {
         />
 
         <form
-          onSubmit={form.onSubmit((values) => {
+          onSubmit={form.onSubmit(async (values) => {
             console.log(values);
+
+            if (values.photo) {
+              setUploading(true);
+              setLoading(true);
+              const logoURL = await uploadImage(values.photo, "plate");
+              setUploading(false);
+              if (logoURL) {
+                const payload = {
+                  restaurantId: snapAuth.user?.restaurant._id as string,
+                  plate: {
+                    photo: logoURL,
+                    name: values.name,
+                    description: values.description,
+                    price: Number(values.price),
+                    ingredients: values.ingredients,
+                    categories: values.categories,
+                    isRecommendation: values.isRecommendation,
+                  },
+                };
+
+                const resp = await addUpdatePlate(payload);
+
+                if (resp.ok) {
+                  toast({
+                    title: id
+                      ? "Se ha actualizado el plato exitosamente"
+                      : "Se ha creado el plato exitosamente!.",
+                  });
+
+                  navigate("/home/owner/menu");
+                } else {
+                  toast({
+                    variant: "destructive",
+                    title: "Algo salio mal.",
+                  });
+                }
+              } else {
+                toast({
+                  variant: "destructive",
+                  title: "Algo salio mal al subir la imagen.",
+                });
+              }
+              setLoading(false);
+            }
           })}
           className="flex flex-col gap-4 w-96 border p-5 rounded-md"
         >
+          <div>
+            {form.values.photo ? <img src={previewUrl} alt="plate" /> : null}
+          </div>
+
           <Input
             label="Foto"
             required
@@ -64,6 +121,7 @@ function AddViewPlate() {
             onChange={(e) => {
               if (e.target.files) {
                 form.setFieldValue("photo", e.target.files[0]);
+                setPreviewUrl(URL.createObjectURL(e.target.files[0]));
               }
             }}
           />
@@ -97,7 +155,6 @@ function AddViewPlate() {
               <Input
                 placeholder="Crear ingrediente..."
                 containerClassName="w-full"
-                required
                 value={ingredient}
                 onChange={(e) => setIngredient(e.target.value)}
               />
@@ -105,11 +162,13 @@ function AddViewPlate() {
                 role="button"
                 stroke={2}
                 onClick={() => {
-                  form.setFieldValue("ingredients", [
-                    ...form.values.ingredients,
-                    ingredient,
-                  ]);
-                  setIngredient("");
+                  if (ingredient) {
+                    form.setFieldValue("ingredients", [
+                      ...form.values.ingredients,
+                      ingredient,
+                    ]);
+                    setIngredient("");
+                  }
                 }}
               />
             </div>
@@ -175,7 +234,17 @@ function AddViewPlate() {
               Es una Recomendacion
             </Label>
           </div>
-          <Button variant={'outline'} type="submit">Agregar Plato</Button>
+          <Button
+            variant={"outline"}
+            loading={loading || uploading}
+            type="submit"
+          >
+            {uploading
+              ? "Uploading Image..."
+              : loading
+              ? "Agregando Plato..."
+              : "Agregar Plato"}
+          </Button>
         </form>
       </div>
     </div>
