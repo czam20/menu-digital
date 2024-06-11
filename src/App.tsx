@@ -1,4 +1,4 @@
-import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Link, Outlet, Route, Routes } from "react-router-dom";
 import "./App.css";
 import OwnerRegister from "./pages/OwnerRegister";
 import Login from "./pages/Login";
@@ -12,6 +12,8 @@ import UnauthenticatedRoutes from "./components/unauthenticated-routes";
 import { Button } from "./components/ui/button";
 import Home from "./pages/Home";
 import WaiterRegister from "./pages/Home/pages/WaiterRegister";
+import ViewEditMenu from "./pages/Home/pages/ViewEditMenu";
+import AddViewPlate from "./pages/Home/pages/AddViewPlate";
 
 function App() {
   const snapAuth = useSnapshot(authStore);
@@ -65,6 +67,7 @@ function App() {
               </>
             }
           />
+
           <Route
             path="/owner/register"
             element={
@@ -73,22 +76,7 @@ function App() {
               </UnauthenticatedRoutes>
             }
           />
-          <Route
-            path="home/owner/waiter/register"
-            element={
-              <ProtectedRoutes>
-                <WaiterRegister />
-              </ProtectedRoutes>
-            }
-          />
-          <Route
-            path="home/owner/menu"
-            element={
-              <ProtectedRoutes>
-                creacion y edicion de menu del propietario
-              </ProtectedRoutes>
-            }
-          />
+
           <Route
             path="/login"
             element={
@@ -97,14 +85,25 @@ function App() {
               </UnauthenticatedRoutes>
             }
           />
+
           <Route
-            path="/home"
+            path="home"
             element={
               <ProtectedRoutes>
-                <Home />
+                <Outlet />
               </ProtectedRoutes>
             }
-          />
+          >
+            <Route index path="" element={<Home />} />
+            <Route path="owner">
+              <Route path="waiter/register" element={<WaiterRegister />} />
+              <Route path="menu">
+                <Route index path="" element={<ViewEditMenu />} />
+                <Route path="plate/add" element={<AddViewPlate />} />
+                <Route path="plate/:id" element={<AddViewPlate />} />
+              </Route>
+            </Route>
+          </Route>
 
           <Route path="/menu/:menuid/:plateid" element={<>detalle menu</>} />
         </Routes>

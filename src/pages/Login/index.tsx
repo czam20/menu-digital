@@ -63,7 +63,7 @@ function Login() {
             value={form.values.password}
             onChange={(e) => form.setFieldValue("password", e.target.value)}
           />
-          <Button type="submit" loading={loading}>
+          <Button variant={"outline"} type="submit" loading={loading}>
             Ingresar
           </Button>
         </form>

@@ -131,7 +131,9 @@ function OwnerRegister() {
               </div>
             </div>
 
-            <Button type="submit">Continuar</Button>
+            <Button variant={"outline"} type="submit">
+              Continuar
+            </Button>
           </>
         );
 
@@ -174,7 +176,7 @@ function OwnerRegister() {
               }
               error={form.errors.confirmPassword as string}
             />
-            <Button type="submit" loading={loading}>
+            <Button variant={"outline"} type="submit" loading={loading}>
               {uploading
                 ? "Uploading Image..."
                 : loading

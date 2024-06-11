@@ -28,17 +28,17 @@ function OwnerHome() {
         <div className="flex flex-col gap-4 w-96 border p-5 rounded-md">
           <Button
             variant="outline"
-            onClick={() => navigate("/home/owner/waiter/register")}
-          >
-            Registrar Mesero
-          </Button>
-          <Button
-            variant="outline"
             onClick={() => {
               navigate("/home/owner/menu");
             }}
           >
             Editar Menú
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => navigate("/home/owner/waiter/register")}
+          >
+            Registrar Mesero
           </Button>
 
           <Separator />
