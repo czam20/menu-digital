@@ -14,6 +14,7 @@ import Home from "./pages/Home";
 import WaiterRegister from "./pages/Home/pages/WaiterRegister";
 import ViewEditMenu from "./pages/Home/pages/ViewEditMenu";
 import AddViewPlate from "./pages/Home/pages/AddViewPlate";
+import Menu from "./pages/Menu";
 
 function App() {
   const snapAuth = useSnapshot(authStore);
@@ -52,17 +53,7 @@ function App() {
             element={
               <>
                 <UnauthenticatedRoutes>
-                  <div className="flex gap-3">
-                    <Link
-                      to="/owner/register"
-                      className="underline text-blue-300"
-                    >
-                      Registro Propietario
-                    </Link>
-                    <Link to="/login" className="underline text-blue-300">
-                      Login
-                    </Link>
-                  </div>
+                  <Login />
                 </UnauthenticatedRoutes>
               </>
             }
@@ -105,7 +96,7 @@ function App() {
             </Route>
           </Route>
 
-          <Route path="/menu/:menuid/:plateid" element={<>detalle menu</>} />
+          <Route path="/menu/:restaurantId" element={<Menu />} />
         </Routes>
       </BrowserRouter>
       <Toaster />
