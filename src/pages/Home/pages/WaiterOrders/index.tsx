@@ -45,7 +45,7 @@ function WaiterOrders() {
                 className="flex flex-col gap-4 w-96 border p-5 rounded-md"
                 onClick={() => {
                   if(!order.confirmed){
-                    navigate(`waiter/order/${order._id}`)
+                    navigate(`/waiter/order/${order._id}`)
                   }
                 }}
               >
