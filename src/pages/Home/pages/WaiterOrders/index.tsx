@@ -43,6 +43,11 @@ function WaiterOrders() {
               <div
                 key={idx}
                 className="flex flex-col gap-4 w-96 border p-5 rounded-md"
+                onClick={() => {
+                  if(!order.confirmed){
+                    navigate(`waiter/order/${order._id}`)
+                  }
+                }}
               >
                 <p>Nombre Cliente: {order?.client?.fullname ?? "N/A"}</p>
                 <p>Mesa: {order?.table ?? "N/A"}</p>

@@ -45,18 +45,18 @@ function OwnerHome() {
             className="scale-90"
             id="QRCode"
             value={
-              window.location.host + `/menu/${snapAuth.user?.restaurant._id}`
+              'https://' + window.location.host + `/menu/${snapAuth.user?.restaurant._id}`
             }
           />
 
           <a
             className="hover:text-blue-400"
             href={
-              window.location.host + `/menu/${snapAuth.user?.restaurant._id}`
+              'https://' + window.location.host + `/menu/${snapAuth.user?.restaurant._id}`
             }
             target="_blank"
           >
-            {window.location.host + `/menu/${snapAuth.user?.restaurant._id}`}
+            {'https://' + window.location.host + `/menu/${snapAuth.user?.restaurant._id}`}
           </a>
 
           <Button
@@ -98,6 +98,13 @@ function OwnerHome() {
           >
             Editar Menú
           </Button>
+          <Button
+            variant="outline"
+            onClick={() => navigate("/home/waiter/orders")}
+          >
+            Pedidos
+          </Button>
+          <Separator />
           <Button
             variant="outline"
             onClick={() => navigate("/home/owner/waiter/register")}
