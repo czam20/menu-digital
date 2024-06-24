@@ -6,7 +6,6 @@ import {
   IconPlus,
   IconTrash,
 } from "@tabler/icons-react";
-import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
