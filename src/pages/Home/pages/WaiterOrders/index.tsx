@@ -42,6 +42,8 @@ function WaiterOrders() {
             return (
               <div
                 key={idx}
+                role='button'
+                
                 className="flex flex-col gap-4 w-96 border p-5 rounded-md"
                 onClick={() => {
                   if(!order.confirmed){
