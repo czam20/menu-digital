@@ -15,6 +15,7 @@ import ViewEditMenu from "./pages/Home/pages/ViewEditMenu";
 import AddViewPlate from "./pages/Home/pages/AddViewPlate";
 import Menu from "./pages/Menu";
 import WaiterOrder from "./pages/Home/pages/WaiterOrder";
+import WaiterOrders from "./pages/Home/pages/WaiterOrders";
 
 function App() {
   const snapAuth = useSnapshot(authStore);
@@ -94,6 +95,7 @@ function App() {
                 <Route path="plate/:id" element={<AddViewPlate />} />
               </Route>
             </Route>
+            <Route path="waiter/orders" element={<WaiterOrders />} />
           </Route>
           <Route path="waiter/order/:id" element={<WaiterOrder />} />
 

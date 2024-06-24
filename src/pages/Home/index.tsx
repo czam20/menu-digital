@@ -49,7 +49,13 @@ function OwnerHome() {
             }
           />
 
-          <a  className='hover:text-blue-400'href={window.location.host + `/menu/${snapAuth.user?.restaurant._id}`} target="_blank">
+          <a
+            className="hover:text-blue-400"
+            href={
+              window.location.host + `/menu/${snapAuth.user?.restaurant._id}`
+            }
+            target="_blank"
+          >
             {window.location.host + `/menu/${snapAuth.user?.restaurant._id}`}
           </a>
 
@@ -117,6 +123,8 @@ function OwnerHome() {
 }
 
 function WaiterHome() {
+  const navigate = useNavigate();
+
   const snapAuth = useSnapshot(authStore);
   return (
     <div className="w-full min-h-screen flex justify-center items-center">
@@ -135,6 +143,12 @@ function WaiterHome() {
         </div>
         <h1 className="text-center text-3xl">Mesero</h1>
         <div className="flex flex-col gap-4 w-96 border p-5 rounded-md">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/home/waiter/orders")}
+          >
+            Pedidos
+          </Button>
           <Separator />
 
           <Button
