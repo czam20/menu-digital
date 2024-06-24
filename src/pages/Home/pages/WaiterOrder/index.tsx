@@ -1,52 +1,73 @@
-import { useParams } from "react-router";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router";
+import getOrder from "./api/get-order";
+import { useSnapshot } from "valtio";
+import authStore from "@/store/auth";
+import { useToast } from "@/components/ui/use-toast";
+import { Separator } from "@/components/ui/separator";
+import { CATEGORIES } from "../ViewEditMenu";
+import { selectedProps } from "@/pages/Menu";
 import {
-  IconArrowLeft,
   IconCheck,
   IconEye,
   IconEyeOff,
   IconPlus,
   IconTrash,
 } from "@tabler/icons-react";
-import { useNavigate } from "react-router";
-import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
-import { useSnapshot } from "valtio";
-import authStore from "@/store/auth";
-import { useToast } from "@/components/ui/use-toast";
-import getAllPlates, {
-  Plate,
-} from "../Home/pages/ViewEditMenu/api/get-all-plates";
-import { CATEGORIES } from "../Home/pages/ViewEditMenu";
 import { Button } from "@/components/ui/button";
-import confirmOrder from "./api/confirm-order";
-import QRCode from "react-qr-code";
+import getAllPlates, { Plate } from "../ViewEditMenu/api/get-all-plates";
+import { cn } from "@/lib/utils";
+import { Loader2 } from "lucide-react";
+import { useForm } from "@mantine/form";
+import { Input } from "@/components/ui/input";
+import confirmOrderWaiter from "./api/confirm-order-waiter";
 
-export interface selectedProps extends Plate {
-  quantity: number;
-}
+function WaiterOrder() {
+  const { id } = useParams();
 
-function Menu() {
-  const navigate = useNavigate();
-  const snapAuth = useSnapshot(authStore);
   const { toast } = useToast();
-  const { restaurantId } = useParams();
+  const [selectedPlates, setSelectedPlates] = useState<selectedProps[]>([]);
+  const snapAuth = useSnapshot(authStore);
+  const [step, setStep] = useState(0);
+  const [client, setClient] = useState<any>({});
+  const [completed, setCompleted] = useState(false);
+  const navigate = useNavigate();
+
   const [plates, setPlates] = useState<Plate[]>([]);
-  const [selectedPlates, setSelectedPlates] = useState<selectedProps[]>(() => {
-    const saved = localStorage.getItem("selectedPlates");
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const [orderId, setOrderId] = useState("");
-
   const [selectedCategory, setSelectedCategory] = useState<
     "entrada" | "postre" | "principal" | "bebida"
   >(CATEGORIES[0].label);
 
+  const filteredPlates = plates.filter((plate) =>
+    plate.categories.includes(selectedCategory)
+  );
+
+  useEffect(() => {
+    const getOrderDetails = async () => {
+      const data = await getOrder({
+        orderId: id as string,
+        restaurantId: snapAuth.user?.restaurant._id as string,
+      });
+
+      if (data.ok) {
+        setSelectedPlates(
+          JSON.parse(data?.data?.order.platos as string) as any
+        );
+      } else {
+        toast({
+          title: "Algo salio mal",
+          variant: "destructive",
+        });
+      }
+    };
+
+    getOrderDetails();
+  }, []);
+
   useEffect(() => {
     const getMenu = async () => {
       const resp = await getAllPlates({
-        restaurantId: restaurantId ?? (snapAuth.user?.restaurant._id as string),
+        restaurantId: snapAuth.user?.restaurant._id as string,
       });
 
       if (resp.ok && resp.data) {
@@ -61,14 +82,6 @@ function Menu() {
 
     getMenu();
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem("selectedPlates", JSON.stringify(selectedPlates));
-  }, [selectedPlates]);
-
-  const filteredPlates = plates.filter((plate) =>
-    plate.categories.includes(selectedCategory)
-  );
 
   const handleAddPlate = (plate: Plate) => {
     const existingPlate = selectedPlates.find((p) => p._id === plate._id);
@@ -90,32 +103,31 @@ function Menu() {
     setSelectedPlates(updatedSelectedPlates);
   };
 
-  if (orderId) {
+  if (selectedPlates.length === 0 || plates.length === 0) {
     return (
-      <div className="w-full min-h-screen flex flex-col justify-center items-center">
-        <h1 className="text-center text-4xl">Compartir Pedido Con Mesero</h1>
-        <QRCode
-          className="scale-90"
-          id="QRCode"
-          value={window.location.host + `/waiter/order/${orderId}`}
-        />
-
-        <a
-          className="hover:text-blue-400"
-          href={window.location.host + `/waiter/order/${orderId}`}
-          target="_blank"
-        >
-          {window.location.host + `/waiter/order/${orderId}`}
-        </a>
+      <div className="flex justify-center items-center w-full h-screen">
+        <Loader2 className="h-10 w-10 animate-spin font-sans" />
       </div>
     );
+  }
+
+  if (completed) {
+    return (
+      <div className="flex justify-center items-center w-full h-screen">
+        <h1 className="text-center text-4xl">Pedido Confirmado</h1>
+      </div>
+    );
+  }
+
+  if (step === 0) {
+    return <ClientRegister setStep={setStep} setClient={setClient} />;
   }
 
   return (
     <>
       <div className="w-full min-h-screen flex justify-center items-center">
         <div className="flex flex-col gap-4">
-          <h1 className="text-center text-4xl">Menú</h1>
+          <h1 className="text-center text-4xl">Pedido</h1>
           {/* <IconArrowLeft
             onClick={() => {
               navigate("/home");
@@ -187,18 +199,24 @@ function Menu() {
                 variant={"outline"}
                 className="gap-2"
                 onClick={async () => {
-                  try {
-                    const data = await confirmOrder({
-                      restaurantId: restaurantId as string,
-                      plates: JSON.stringify(selectedPlates),
-                    });
+                  const data = await confirmOrderWaiter({
+                    restaurantId: snapAuth.user?.restaurant._id as string,
+                    orderId: id as string,
+                    plates: JSON.stringify(selectedPlates),
+                    client: client.client,
+                    table: Number(client.table),
+                  });
 
-                    setOrderId(data.data?.orderId as string);
+                  if (data.ok) {
+                    setCompleted(true);
+                    setTimeout(() => {
+                      navigate("/home");
+                    }, 2000);
 
                     toast({
-                      title: "Pedido Creado",
+                      title: "Pedido Confirmado",
                     });
-                  } catch (err) {
+                  } else {
                     toast({
                       title: "Algo salio mal",
                       variant: "destructive",
@@ -297,4 +315,71 @@ function Menu() {
   );
 }
 
-export default Menu;
+const ClientRegister = (props: any) => {
+  const form = useForm({
+    initialValues: {
+      address: "",
+      table: "",
+      fullname: "",
+      dni: "",
+    },
+  });
+
+  return (
+    <div className="w-full min-h-screen flex justify-center items-center">
+      <div className="flex flex-col gap-4">
+        <h1 className="text-center text-4xl">Registro Cliente</h1>
+
+        <form
+          className="flex flex-col gap-4 w-96 border p-5 rounded-md"
+          onSubmit={form.onSubmit(async (values) => {
+            const payload = {
+              client: {
+                fullname: values.fullname,
+                dni: values.dni,
+                address: values.address,
+              },
+              table: values.table,
+            };
+
+            props.setStep(1);
+            props.setClient(payload);
+          })}
+        >
+          <Input
+            label="Número de Mesa"
+            required
+            value={form.values.table}
+            onChange={(e) => form.setFieldValue("table", e.target.value)}
+          />
+          <Input
+            label="Nombre Completo"
+            required
+            value={form.values.fullname}
+            onChange={(e) => form.setFieldValue("fullname", e.target.value)}
+          />
+
+          <Input
+            label="Número de Identificación"
+            required
+            value={form.values.dni}
+            onChange={(e) => form.setFieldValue("dni", e.target.value)}
+          />
+
+          <Input
+            label="Dirección"
+            required
+            value={form.values.address}
+            onChange={(e) => form.setFieldValue("address", e.target.value)}
+          />
+
+          <Button type="submit" variant="outline">
+            Registrar
+          </Button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default WaiterOrder;

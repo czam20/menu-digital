@@ -42,12 +42,17 @@ function OwnerHome() {
 
         <div className="flex justify-center flex-col items-center gap-2">
           <QrCode
-          className="scale-90"
+            className="scale-90"
             id="QRCode"
             value={
               window.location.host + `/menu/${snapAuth.user?.restaurant._id}`
             }
           />
+
+          <a  className='hover:text-blue-400'href={window.location.host + `/menu/${snapAuth.user?.restaurant._id}`} target="_blank">
+            {window.location.host + `/menu/${snapAuth.user?.restaurant._id}`}
+          </a>
+
           <Button
             variant={"outline"}
             onClick={() => {
