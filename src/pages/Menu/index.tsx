@@ -1,6 +1,5 @@
 import { useParams } from "react-router";
 import {
-  IconArrowLeft,
   IconCheck,
   IconEye,
   IconEyeOff,
@@ -27,7 +26,6 @@ export interface selectedProps extends Plate {
 }
 
 function Menu() {
-  const navigate = useNavigate();
   const snapAuth = useSnapshot(authStore);
   const { toast } = useToast();
   const { restaurantId } = useParams();
